@@ -1,0 +1,71 @@
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+using namespace std;
+
+// Structure to store student data
+struct Student {
+    string name;
+    int idNum;
+    int* tests; // Pointer to dynamically allocated array of test scores
+    double average;
+    char grade;
+};
+
+// Function to compute average and grade
+void computeGrade(Student& student, int numTests) {
+    int total = 0;
+    for (int i = 0; i < numTests; i++) {
+        total += student.tests[i];
+    }
+    student.average = static_cast<double>(total) / numTests;
+    
+    if (student.average >= 91) student.grade = 'A';
+    else if (student.average >= 81) student.grade = 'B';
+    else if (student.average >= 71) student.grade = 'C';
+    else if (student.average >= 61) student.grade = 'D';
+    else student.grade = 'F';
+}
+
+int main() {
+    ifstream inputFile("StudentGrades.txt");
+    if (!inputFile) {
+        cerr << "Error opening file." << endl;
+        return 1;
+    }
+
+    int numStudents, numTests;
+    inputFile >> numStudents >> numTests;
+    
+    // Dynamically allocate array of Student structures
+    Student* students = new Student[numStudents];
+    
+    // Read student data from file
+    for (int i = 0; i < numStudents; i++) {
+        inputFile >> students[i].name >> students[i].idNum;
+        students[i].tests = new int[numTests];
+        for (int j = 0; j < numTests; j++) {
+            inputFile >> students[i].tests[j];
+        }
+        computeGrade(students[i], numTests);
+    }
+    
+    inputFile.close();
+    
+    // Display student records
+    cout << left << setw(12) << "Name" << setw(8) << "ID" 
+         << setw(10) << "Average" << "Grade" << endl;
+    cout << "-----------------------------------" << endl;
+    for (int i = 0; i < numStudents; i++) {
+        cout << left << setw(12) << students[i].name << setw(8) << students[i].idNum
+             << setw(10) << fixed << setprecision(2) << students[i].average << students[i].grade << endl;
+    }
+    
+    // Free dynamically allocated memory
+    for (int i = 0; i < numStudents; i++) {
+        delete[] students[i].tests;
+    }
+    delete[] students;
+    
+    return 0;
+}
